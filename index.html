@@ -1,47 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>JEELIZ VTO WIDGET INTEGRATION DEMO</title>
+    <title>Virtual Glasses Try-On</title>
     <meta charset='utf-8' />
+    <meta name="description" content="Try on optical glasses virtually in real-time">
 
     <!-- Forbid resize on pinch with IOS Safari: -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
     
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Glasses VTO">
+    
     <!-- INCLUDE MAIN SCRIPT: -->
     <script src='dist/JeelizVTOWidget.js'></script>
-
-    <!-- For icons adjust fame or resize canvas -->
-    <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
-
-    <!-- Font for the header only: -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
     
     <!-- main stylesheet: -->
     <link rel='stylesheet' href='css/JeelizVTOWidget.css' />
 
     <script>
-      let _isResized = false;
-
-      function test_resizeCanvas() {
-        // halves the height:
-        let halfHeightPx = Math.round(window.innerHeight / 2).toString() + 'px';
-        
-        const domWidget = document.getElementById('JeelizVTOWidget');
-        domWidget.style.maxHeight = (_isResized) ? 'none' : halfHeightPx;
-
-        _isResized = !_isResized;
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed:', err));
+        });
       }
-
 
       function get_initialSKU(){
         // look if a SKU is provided as a URL parameters:
         const queryString = window.location.search;
         const URLParams = new URLSearchParams(queryString);
-        const sku = URLParams.get('sku') || 'rayban_aviator_or_vertFlash';
+        const sku = URLParams.get('sku') || 'rayban_round_cuivre_pinkBrownDegrade';
         console.log('Initial SKU =', sku);
         return sku;
       }
-
 
       function get_isShadow(){
         const queryString = window.location.search;
@@ -49,55 +46,48 @@
         return URLParams.get('isHideShadow') ? false : true;
       }
 
+      function showInstructions() {
+        const instructions = document.getElementById('instructions');
+        instructions.style.display = 'flex';
+        setTimeout(() => {
+          instructions.style.display = 'none';
+        }, 5000);
+      }
 
       // entry point:
       function main() {
+        showInstructions();
+        
         JEELIZVTOWIDGET.start({
           isShadow: get_isShadow(),
           sku: get_initialSKU(),
           searchImageMask: 'https://appstatic.jeeliz.com/jeewidget/images/target512.jpg',
           searchImageColor: 0xeeeeee,
           callbackReady: function(){
-            console.log('INFO: JEELIZVTOWIDGET is ready :)');
-
-            // add a LUT to change video rendering:
-            //JEELIZVTOWIDGET.set_LUT('images/LUTs/LUTGrayscale.png');
-            //JEELIZVTOWIDGET.set_LUT('images/LUTs/LUTImprove.jpg');
+            console.log('INFO: Widget is ready');
           },
-          onError: function(errorLabel){ // this function catches errors, so you can display custom integrated messages
-            alert('An error happened. errorLabel =' + errorLabel)
+          onError: function(errorLabel){
+            let errorMessage = 'An error occurred. ';
             switch(errorLabel) {
               case 'WEBCAM_UNAVAILABLE':
-                // the user has no camera, or does not want to share it.
+                errorMessage += 'Please check your camera permissions and ensure your camera is not being used by another application.';
                 break;
-          
               case 'INVALID_SKU':
-                // the provided SKU does not match with a glasses model
+                errorMessage += 'The selected glasses model could not be loaded.';
                 break;
-
               case 'PLACEHOLDER_NULL_WIDTH':
               case 'PLACEHOLDER_NULL_HEIGHT':
-                // Something is wrong with the placeholder
-                // (element whose id='JeelizVTOWidget')
+                errorMessage += 'Display issue detected. Please refresh the page.';
                 break;
-                
               case 'FATAL':
               default:
-                // a bit error happens:(
+                errorMessage += 'Please refresh the page and try again.';
                 break;
-            } // end switch
-          } // end onError()
-        }) // end JEELIZVTOWIDGET.start call
-      } // end main()
-
-
-      function load_modelBySKU(){
-        const sku = prompt('Please enter a glasses model SKU:', 'rayban_wayfarer_havane_marron');
-        if (sku){
-          JEELIZVTOWIDGET.load(sku);
-        }
+            }
+            alert(errorMessage);
+          }
+        })
       }
-
 
       window.addEventListener('load', main);
     </script>
@@ -106,13 +96,19 @@
   <body>
     <div class='content'>
 
-
-      <div class='header'>
-        <div class="headerTitle">
-          Jeeliz VTO Widget
-        </div>      
+      <!-- Instructions overlay -->
+      <div id='instructions'>
+        <div class='instructions-content'>
+          <h2>How to Get Ideal Results</h2>
+          <ul>
+            <li>Ensure good lighting in your environment</li>
+            <li>Look directly at the camera</li>
+            <li>Keep your face centered in the frame</li>
+            <li>Remove any existing glasses</li>
+            <li>Hold still for best results</li>
+          </ul>
+        </div>
       </div>
-
 
       <!-- Please keep the same element IDs so that JEELIZVTOWIDGET can extract them from the DOM -->
 
@@ -130,32 +126,14 @@
          changing the total size of the placeholder
         -->
         <canvas id='JeelizVTOWidgetCanvas'></canvas>
-        
-        <div class='JeelizVTOWidgetControls JeelizVTOWidgetControlsTop'>
-          <!-- ADJUST BUTTON: -->
-          <button id='JeelizVTOWidgetAdjust'>
-            <div class="buttonIcon"><i class="fas fa-arrows-alt"></i></div>Adjust
-          </button>
-
-          <!-- RESIZE WIDGET BUTTON: -->
-          <button id='buttonResizeCanvas' onclick='test_resizeCanvas();'>
-            <div class="buttonIcon"><i class="fas fa-sync-alt"></i></div>Resize widget
-          </button>
-        </div>
 
         <!-- CHANGE MODEL BUTTONS: -->
         <div class='JeelizVTOWidgetControls' id='JeelizVTOWidgetChangeModelContainer'>
-          <button onclick="JEELIZVTOWIDGET.load('rayban_aviator_or_vertFlash')">Model 1</button>
-          <button onclick="JEELIZVTOWIDGET.load('rayban_round_cuivre_pinkBrownDegrade')">Model 2</button>
-          <button onclick="load_modelBySKU()">by SKU</button>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_round_cuivre_pinkBrownDegrade')">Round</button>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_clubmaster_havane_vert')">Clubmaster</button>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_wayfarer_havane_marron')">Wayfarer</button>
+          <button onclick="JEELIZVTOWIDGET.load('rayban_new_wayfarer_havane_marronClassique_g15')">Classic</button>
         </div>
-
-        <!-- BEGIN ADJUST NOTICE -->
-        <div id='JeelizVTOWidgetAdjustNotice'>
-          Move the glasses to adjust them.
-          <button class='JeelizVTOWidgetBottomButton' id='JeelizVTOWidgetAdjustExit'>Quit</button>
-        </div>
-        <!-- END AJUST NOTICE -->
 
         <!-- BEGIN LOADING WIDGET (not model) -->
         <div id='JeelizVTOWidgetLoading'>
