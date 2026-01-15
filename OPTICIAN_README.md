@@ -42,6 +42,69 @@ A lightweight Progressive Web App (PWA) designed for opticians to provide custom
 2. Look for the install icon in the address bar
 3. Click "Install" to add the app to your system
 
+## Deploy on Vercel
+
+Vercel provides a simple and fast way to deploy this PWA application with automatic HTTPS, which is required for camera access.
+
+### Prerequisites
+- A [Vercel account](https://vercel.com/signup) (free tier available)
+- Git repository with your application code
+
+### Deployment Steps
+
+#### Option 1: Deploy via Vercel Dashboard
+1. **Push your code to a Git repository** (GitHub, GitLab, or Bitbucket)
+2. **Log in to Vercel** at [vercel.com](https://vercel.com)
+3. **Click "Add New Project"**
+4. **Import your Git repository**
+5. **Configure project settings:**
+   - Framework Preset: `Other`
+   - Root Directory: `./` (or leave empty)
+   - Build Command: Leave empty (no build needed)
+   - Output Directory: Leave empty
+6. **Click "Deploy"**
+
+Your application will be live at `https://your-project-name.vercel.app` within minutes.
+
+#### Option 2: Deploy via Vercel CLI
+1. **Install Vercel CLI:**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Navigate to your project directory:**
+   ```bash
+   cd your-project-directory
+   ```
+
+3. **Deploy:**
+   ```bash
+   vercel
+   ```
+
+4. **Follow the prompts** to link or create a new project
+
+5. **For production deployment:**
+   ```bash
+   vercel --prod
+   ```
+
+### Configuration Notes
+
+- **HTTPS by Default**: Vercel automatically provides HTTPS, which is required for camera access via MediaStream API
+- **Custom Domain**: You can add a custom domain in the Vercel dashboard under Project Settings → Domains
+- **Environment Variables**: Not required for this basic setup, but can be added in Project Settings if needed
+- **PWA Support**: Service worker and manifest files will work automatically on Vercel
+- **Caching**: Static assets are automatically cached by Vercel's CDN for optimal performance
+
+### Post-Deployment
+
+After deployment, your application will be accessible via:
+- Vercel URL: `https://your-project-name.vercel.app`
+- Custom domain (if configured)
+
+The PWA features (offline support, installability) will work immediately since Vercel serves all content over HTTPS.
+
 ## Technical Details
 
 ### Lightweight Design
