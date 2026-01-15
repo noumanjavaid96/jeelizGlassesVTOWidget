@@ -27,7 +27,7 @@
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js')
             .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker registration failed'));
+            .catch(err => console.log('Service Worker registration failed:', err));
         });
       }
 
@@ -67,19 +67,24 @@
             console.log('INFO: Widget is ready');
           },
           onError: function(errorLabel){
-            alert('An error happened. Please check your camera permissions.')
+            let errorMessage = 'An error occurred. ';
             switch(errorLabel) {
               case 'WEBCAM_UNAVAILABLE':
+                errorMessage += 'Please check your camera permissions and ensure your camera is not being used by another application.';
                 break;
               case 'INVALID_SKU':
+                errorMessage += 'The selected glasses model could not be loaded.';
                 break;
               case 'PLACEHOLDER_NULL_WIDTH':
               case 'PLACEHOLDER_NULL_HEIGHT':
+                errorMessage += 'Display issue detected. Please refresh the page.';
                 break;
               case 'FATAL':
               default:
+                errorMessage += 'Please refresh the page and try again.';
                 break;
             }
+            alert(errorMessage);
           }
         })
       }
